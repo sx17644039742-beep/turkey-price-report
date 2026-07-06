@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Turkey Phone Price Intelligence · Xiaomi / POCO / Honor / Samsung</title>
+<style>
+  :root {
+    --xiaomi-1: #ff9a3d;
+    --xiaomi-2: #ff2e88;
+    --poco-1: #ffe066;
+    --poco-2: #f4a300;
+    --honor-1: #00f5d4;
+    --honor-2: #00b4ff;
+    --samsung-1: #3ea6ff;
+    --samsung-2: #7c5cff;
+    --bg-0: #05070f;
+    --bg-1: #0a0e1c;
+    --panel: rgba(255,255,255,0.045);
+    --panel-strong: rgba(255,255,255,0.07);
+    --border: rgba(255,255,255,0.09);
+    --text: #eef0fb;
+    --muted: #8b93b8;
+    --accent-1: #7c3aed;
+    --accent-2: #22d3ee;
+    --up: #ff5d7a;
+    --down: #33e2a0;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Inter", sans-serif;
+    background:
+      radial-gradient(circle at 12% -8%, rgba(124,58,237,0.35), transparent 42%),
+      radial-gradient(circle at 92% 8%, rgba(34,211,238,0.22), transparent 40%),
+      radial-gradient(circle at 50% 110%, rgba(255,46,136,0.16), transparent 45%),
+      var(--bg-0);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  header { padding: 34px 36px 22px; position: relative; }
+  header h1 {
+    margin: 0 0 8px;
+    font-size: 25px;
+    letter-spacing: 0.3px;
+    background: linear-gradient(90deg, #ffffff, #b9c2ff 45%, #7be8ff);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 0 0 30px rgba(124,58,237,0.25);
+  }
+  header p { margin: 0; color: var(--muted); font-size: 13px; }
+
+  .container { max-width: 1360px; margin: 0 auto; padding: 6px 32px 70px; }
+
+  .glow-card {
+    position: relative;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 0 0 1px rgba(255,255,255,0.02), 0 18px 40px -22px rgba(0,0,0,0.7);
+  }
+  .glow-card.ms-elevated { z-index: 500; }
+
+  .kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .kpi-card {
+    position: relative;
+    border-radius: 16px;
+    padding: 18px 20px;
+    overflow: hidden;
+    border: 1px solid var(--border);
+    background: linear-gradient(160deg, rgba(255,255,255,0.06), rgba(255,255,255,0.01));
+  }
+  .kpi-card::before {
+    content: "";
+    position: absolute; inset: -40%;
+    background: radial-gradient(circle, var(--glow-color, rgba(124,58,237,0.55)), transparent 60%);
+    opacity: 0.5;
+    filter: blur(6px);
+  }
+  .kpi-card.total { --glow-color: rgba(124,58,237,0.55); }
+  .kpi-card.brands { --glow-color: rgba(34,211,238,0.5); }
+  .kpi-card.lowest { --glow-color: rgba(255,93,122,0.5); }
+  .kpi-card.avg { --glow-color: rgba(51,226,160,0.45); }
+  .kpi-card .kpi-inner { position: relative; z-index: 1; }
+  .kpi-card .kpi-label { font-size: 11px; color: var(--muted); margin-bottom: 8px; letter-spacing: 0.6px; text-transform: uppercase; }
+  .kpi-card .kpi-value { font-size: 30px; font-weight: 700; line-height: 1; color: #fff; }
+  .kpi-card .kpi-value .unit { font-size: 12px; font-weight: 400; opacity: 0.7; margin-left: 5px; }
+  .kpi-card .kpi-sub { font-size: 11px; color: var(--muted); margin-top: 9px; }
+
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 16px;
+    margin-bottom: 22px;
+  }
+  .brand-card {
+    padding: 18px 20px;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
+  }
+  .brand-card:hover { transform: translateY(-2px); }
+  .brand-card::before {
+    content: "";
+    position: absolute; top: 0; left: 14px; right: 14px; height: 2px; border-radius: 2px;
+  }
+  .brand-card.Xiaomi::before { background: linear-gradient(90deg, var(--xiaomi-1), var(--xiaomi-2)); box-shadow: 0 0 12px var(--xiaomi-2); }
+  .brand-card.POCO::before { background: linear-gradient(90deg, var(--poco-1), var(--poco-2)); box-shadow: 0 0 12px var(--poco-2); }
+  .brand-card.Honor::before { background: linear-gradient(90deg, var(--honor-1), var(--honor-2)); box-shadow: 0 0 12px var(--honor-2); }
+  .brand-card.Samsung::before { background: linear-gradient(90deg, var(--samsung-1), var(--samsung-2)); box-shadow: 0 0 12px var(--samsung-2); }
+  .brand-card.is-active { border-color: rgba(255,255,255,0.35); box-shadow: 0 0 0 1px rgba(255,255,255,0.2), 0 0 30px -6px rgba(124,58,237,0.6); }
+  .brand-card h3 { margin: 0 0 10px; font-size: 15px; font-weight: 600; color: #fff; }
+  .brand-card .price-row { font-size: 25px; font-weight: 700; margin-bottom: 4px; color: #fff; }
+  .brand-card .sub { font-size: 12px; color: var(--muted); line-height: 1.8; }
+  .brand-card a { color: #9db4ff; text-decoration: none; }
+  .brand-card a:hover { text-decoration: underline; }
+  .brand-card .hint { font-size: 10px; color: #5c6488; margin-top: 8px; }
+
+  .panel { padding: 20px; margin-bottom: 22px; }
+  .panel-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 14px; flex-wrap: wrap; gap: 8px; }
+  .panel h2 { margin: 0; font-size: 15px; font-weight: 600; color: #fff; }
+  .panel .panel-note { font-size: 11px; color: var(--muted); }
+  .badge-demo {
+    display: inline-block; font-size: 10px; padding: 2px 8px; border-radius: 20px;
+    background: rgba(255,93,122,0.15); color: #ff9db0; border: 1px solid rgba(255,93,122,0.35);
+    margin-left: 8px; text-transform: uppercase; letter-spacing: 0.4px;
+  }
+  .chart-wrap { max-width: 780px; margin: 0 auto; height: 300px; }
+  .chart-wrap.wide { max-width: 100%; }
+
+  .split-row { display: flex; gap: 20px; align-items: stretch; margin-bottom: 22px; flex-wrap: wrap; }
+  .split-row .glow-card.panel { margin-bottom: 0; }
+  .trend-panel { flex: 1 1 380px; max-width: 44%; }
+  .position-panel { flex: 1.3 1 460px; }
+  @media (max-width: 900px) {
+    .trend-panel, .position-panel { max-width: 100%; flex-basis: 100%; }
+  }
+
+  /* Brand price-positioning range bars */
+  .position-chart-wrap { padding: 6px 6px 0; }
+  .pos-row { margin-bottom: 20px; }
+  .pos-row:last-child { margin-bottom: 4px; }
+  .pos-label { font-size: 12.5px; color: #c7cce6; margin-bottom: 7px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 6px; }
+  .pos-track { position: relative; background: rgba(255,255,255,0.05); border-radius: 8px; height: 22px; }
+  .pos-range { position: absolute; top: 0; bottom: 0; border-radius: 8px; }
+  .pos-avg-dot { position: absolute; top: -4px; width: 4px; height: 30px; border-radius: 2px; background: #fff; box-shadow: 0 0 8px rgba(255,255,255,0.8); }
+  .pos-minmax { font-size: 10.5px; color: var(--muted); margin-top: 5px; display: flex; justify-content: space-between; }
+
+  /* Cost-performance leaderboard bars */
+  .leaderboard-wrap { max-height: 460px; overflow-y: auto; padding-right: 6px; }
+  .lb-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+  .lb-rank { width: 22px; flex-shrink: 0; font-size: 12px; font-weight: 700; color: var(--muted); text-align: center; }
+  .lb-rank.top3 { color: #ffd23f; }
+  .lb-info { width: 260px; flex-shrink: 0; font-size: 12.5px; }
+  .lb-info .product-name { display: block; }
+  .lb-track { flex: 1; background: rgba(255,255,255,0.05); border-radius: 6px; height: 16px; position: relative; overflow: hidden; }
+  .lb-fill { height: 100%; border-radius: 6px; min-width: 3px; }
+  .lb-value { width: 130px; flex-shrink: 0; font-size: 12px; text-align: right; color: var(--text); }
+
+  .split-row2 { display: flex; gap: 20px; align-items: stretch; margin-bottom: 22px; flex-wrap: wrap; }
+  .split-row2 .glow-card.panel { margin-bottom: 0; flex: 1 1 460px; }
+
+  .filter-bar {
+    display: flex; flex-wrap: wrap; gap: 14px; align-items: flex-end; padding: 16px 18px; margin-bottom: 16px;
+  }
+  .filter-field { display: flex; flex-direction: column; gap: 6px; min-width: 190px; }
+  .filter-field label { font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); font-weight: 600; }
+  .filter-field input[type=number] {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-size: 13px;
+    background: rgba(255,255,255,0.04);
+    color: var(--text);
+    width: 110px;
+  }
+  .filter-field input[type=number]:focus { outline: none; border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(34,211,238,0.2); }
+  .price-range-fields { display: flex; gap: 8px; align-items: center; }
+  .filter-bar .spacer { flex: 1; }
+  .filter-bar .reset-btn {
+    border: 1px solid rgba(124,58,237,0.5);
+    background: linear-gradient(135deg, rgba(124,58,237,0.85), rgba(34,211,238,0.55));
+    color: #fff;
+    padding: 10px 20px;
+    border-radius: 10px;
+    font-size: 13px;
+    cursor: pointer;
+    font-weight: 600;
+    box-shadow: 0 0 18px -4px rgba(124,58,237,0.7);
+  }
+  .filter-bar .result-count { font-size: 12px; color: var(--muted); align-self: center; }
+
+  .quick-filter-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 16px; }
+  .quick-filter-hint { align-self: center; font-style: italic; }
+  .ms-wrap { position: relative; min-width: 200px; }
+  .ms-button {
+    width: 100%; box-sizing: border-box; text-align: left;
+    border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px;
+    font-size: 13px; background: rgba(255,255,255,0.04); color: var(--text); cursor: pointer;
+    display: flex; justify-content: space-between; align-items: center; gap: 8px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .ms-button:hover { border-color: var(--accent-2); }
+  .ms-caret { font-size: 9px; color: var(--muted); flex-shrink: 0; }
+  .ms-panel {
+    position: absolute; top: calc(100% + 6px); left: 0; z-index: 60;
+    background: #10131f; border: 1px solid var(--border); border-radius: 12px;
+    box-shadow: 0 20px 44px -14px rgba(0,0,0,0.7);
+    width: 260px; padding: 10px;
+  }
+  .ms-panel[hidden] { display: none; }
+  .ms-search input {
+    width: 100%; box-sizing: border-box; border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 10px; font-size: 12.5px; background: rgba(255,255,255,0.05); color: var(--text); margin-bottom: 8px;
+  }
+  .ms-search input:focus { outline: none; border-color: var(--accent-2); box-shadow: 0 0 0 3px rgba(34,211,238,0.18); }
+  .ms-actions { display: flex; gap: 8px; margin-bottom: 8px; }
+  .ms-actions button {
+    flex: 1; font-size: 11px; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border);
+    background: rgba(255,255,255,0.03); color: var(--muted); cursor: pointer;
+  }
+  .ms-actions button:hover { color: #fff; border-color: var(--accent-2); }
+  .ms-options { max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 2px; }
+  .ms-option {
+    display: flex; align-items: center; gap: 8px; padding: 6px 8px; border-radius: 6px; cursor: pointer; font-size: 12.5px;
+  }
+  .ms-option:hover { background: rgba(255,255,255,0.06); }
+  .ms-option input { accent-color: var(--accent-1); cursor: pointer; }
+  .ms-empty { padding: 10px 4px; text-align: center; color: var(--muted); font-size: 12px; }
+
+  table { width: 100%; border-collapse: collapse; }
+  .table-scroll-wrap { max-height: 620px; overflow-y: auto; }
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 5;
+    text-align: left;
+    background: #12162a;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    padding: 12px 14px;
+    cursor: pointer;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--border);
+  }
+  thead th:hover { color: #fff; }
+  tbody td {
+    padding: 12px 14px;
+    font-size: 13px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    vertical-align: middle;
+    color: var(--text);
+  }
+  tbody tr:hover { background: rgba(255,255,255,0.03); }
+  .badge {
+    display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; color: #06070d;
+  }
+  .badge.Xiaomi { background: linear-gradient(90deg, var(--xiaomi-1), var(--xiaomi-2)); color: #1a0a06; }
+  .badge.POCO { background: linear-gradient(90deg, var(--poco-1), var(--poco-2)); color: #241900; }
+  .badge.Honor { background: linear-gradient(90deg, var(--honor-1), var(--honor-2)); color: #04201c; }
+  .badge.Samsung { background: linear-gradient(90deg, var(--samsung-1), var(--samsung-2)); color: #060a1a; }
+  .product-name { font-weight: 600; color: #fff; }
+  .price-main { font-weight: 700; color: #fff; text-shadow: 0 0 14px rgba(124,58,237,0.5); }
+  .config-line { font-size: 11.5px; color: var(--muted); }
+  .config-pill {
+    display: inline-block; background: rgba(124,58,237,0.16); color: #c9b8ff;
+    border: 1px solid rgba(124,58,237,0.35);
+    border-radius: 8px; padding: 3px 9px; font-size: 12px; font-weight: 600;
+  }
+  a.link {
+    color: #0b0f1a; text-decoration: none; font-size: 11.5px; font-weight: 700;
+    background: linear-gradient(90deg, var(--accent-2), #6ee7ff);
+    padding: 5px 12px; border-radius: 8px;
+    box-shadow: 0 0 14px -2px rgba(34,211,238,0.7);
+  }
+  a.link:hover { filter: brightness(1.1); }
+  .empty-row td { text-align: center; color: var(--muted); padding: 34px; }
+
+  footer { text-align: center; font-size: 12px; color: var(--muted); padding: 26px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Turkey Phone Price Intelligence</h1>
+  <p id="header-sub">Xiaomi / POCO / Honor / Samsung · Entry &amp; mid-range · akakce.com lowest listed price · loading data...</p>
+</header>
+
+<div class="container">
+
+  <div class="kpi-grid" id="kpi-grid"></div>
+
+  <div class="summary-grid" id="summary-grid"></div>
+
+  <div class="split-row">
+    <div class="glow-card panel trend-panel">
+      <div class="panel-head">
+        <h2>Price Trend <span id="trend-days-badge" class="badge-demo" style="display:none;"></span></h2>
+        <span class="panel-note" id="trend-note">Cheapest model per brand</span>
+      </div>
+      <div class="quick-filter-row">
+        <div class="ms-wrap" id="ms-brand-quick"></div>
+        <div class="ms-wrap" id="ms-product-quick"></div>
+        <span class="panel-note quick-filter-hint">Only changes this chart</span>
+      </div>
+      <div class="chart-wrap wide" id="trendChartWrap" style="height:240px;"></div>
+    </div>
+
+    <div class="glow-card panel position-panel">
+      <div class="panel-head">
+        <h2>Brand Price Positioning</h2>
+        <span class="panel-note">Min–Max range · white marker = average</span>
+      </div>
+      <div class="chart-wrap wide position-chart-wrap" id="positionChartWrap" style="height:auto;"></div>
+    </div>
+  </div>
+
+  <div class="split-row2">
+    <div class="glow-card panel" style="flex: 1.4 1 560px;">
+      <div class="panel-head">
+        <h2>Best Value Leaderboard <span class="panel-note">(lowest TL per GB of storage)</span></h2>
+      </div>
+      <div class="quick-filter-row">
+        <div class="ms-wrap" id="ms-lb-brand"></div>
+        <span class="panel-note quick-filter-hint">Only changes this leaderboard</span>
+      </div>
+      <div class="leaderboard-wrap" id="leaderboardWrap"></div>
+    </div>
+  </div>
+
+  <div class="glow-card filter-bar">
+    <div class="filter-field">
+      <label>Brand</label>
+      <div class="ms-wrap" id="ms-brand"></div>
+    </div>
+    <div class="filter-field">
+      <label>Model</label>
+      <div class="ms-wrap" id="ms-product"></div>
+    </div>
+    <div class="filter-field">
+      <label>Price Range (TL)</label>
+      <div class="price-range-fields">
+        <input type="number" id="price-min" placeholder="Min" min="0" />
+        <span style="color:var(--muted);">–</span>
+        <input type="number" id="price-max" placeholder="Max" min="0" />
+      </div>
+    </div>
+    <button class="reset-btn" id="reset-btn">Reset Filters</button>
+    <div class="spacer"></div>
+    <span class="result-count" id="result-count"></span>
+  </div>
+
+  <div class="glow-card" style="overflow:hidden;">
+    <div class="table-scroll-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th data-key="brand">Brand</th>
+            <th data-key="model_name">Model</th>
+            <th data-key="config">Config</th>
+            <th data-key="lowest_price">Lowest Price</th>
+            <th data-key="price_per_gb">TL / GB</th>
+            <th>Details</th>
+          </tr>
+        </thead>
+        <tbody id="table-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer id="footer-note"></footer>
+</div>
+
+<script>
+const API_BASE = '';
+const EMBEDDED_DATA = {"scraped_at": "2026-07-06", "source": "akakce.com", "products": [{"sku": "908320846", "brand": "Honor", "model_name": "400", "rom_gb": 256, "ram_gb": 8, "lowest_price": 26999.0, "price_per_gb": 105.46, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,908320846.html", "title": "400 256 GB 8 GB", "monitor": true}, {"sku": "1074431780", "brand": "Honor", "model_name": "400", "rom_gb": 256, "ram_gb": 12, "lowest_price": 27999.0, "price_per_gb": 109.37, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1074431780.html", "title": "400 256 GB 12 GB", "monitor": true}, {"sku": "1352599186", "brand": "Honor", "model_name": "600 Lite", "rom_gb": 256, "ram_gb": null, "lowest_price": 29999, "price_per_gb": 117.18, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1352599186.html", "title": "600 Lite 256 GB", "monitor": true}, {"sku": "1372271394", "brand": "Honor", "model_name": "600", "rom_gb": 256, "ram_gb": null, "lowest_price": 29749.0, "price_per_gb": 116.21, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1372271394.html", "title": "600 256 GB", "monitor": true}, {"sku": "1569326362", "brand": "Honor", "model_name": "600", "rom_gb": 512, "ram_gb": null, "lowest_price": 39999, "price_per_gb": 78.12, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1569326362.html", "title": "600 512 GB", "monitor": true}, {"sku": "1454305890", "brand": "Honor", "model_name": "600 Pro", "rom_gb": 512, "ram_gb": null, "lowest_price": 54499.0, "price_per_gb": 106.44, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1454305890.html", "title": "600 Pro 512 GB", "monitor": true}, {"sku": "1603792602", "brand": "POCO", "model_name": "C81 Pro", "rom_gb": 128, "ram_gb": null, "lowest_price": 9497, "price_per_gb": 74.2, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1603792602.html", "title": "C81 Pro 128 GB", "monitor": true}, {"sku": "1283695048", "brand": "POCO", "model_name": "M8", "rom_gb": 512, "ram_gb": null, "lowest_price": 18999, "price_per_gb": 37.11, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1283695048.html", "title": "M8 512 GB", "monitor": true}, {"sku": "1310126058", "brand": "POCO", "model_name": "M8 Pro", "rom_gb": 256, "ram_gb": 8, "lowest_price": 20999, "price_per_gb": 82.03, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1310126058.html", "title": "M8 Pro 256 GB 8 GB", "monitor": true}, {"sku": "905463218", "brand": "POCO", "model_name": "X7 Pro", "rom_gb": 512, "ram_gb": 12, "lowest_price": 25999.0, "price_per_gb": 50.78, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,905463218.html", "title": "X7 Pro 512 GB 12 GB", "monitor": true}, {"sku": "1140705980", "brand": "POCO", "model_name": "X8 Pro", "rom_gb": 256, "ram_gb": 8, "lowest_price": 24999, "price_per_gb": 97.65, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1140705980.html", "title": "X8 Pro 256 GB 8 GB", "monitor": true}, {"sku": "891189150", "brand": "POCO", "model_name": "X7 Pro", "rom_gb": 256, "ram_gb": 8, "lowest_price": 24999, "price_per_gb": 97.65, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,891189150.html", "title": "X7 Pro 256 GB 8 GB", "monitor": true}, {"sku": "1348534645", "brand": "POCO", "model_name": "M8 Pro", "rom_gb": 512, "ram_gb": 12, "lowest_price": 24999, "price_per_gb": 48.83, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1348534645.html", "title": "M8 Pro 512 GB 12 GB", "monitor": true}, {"sku": "886426117", "brand": "POCO", "model_name": "X7", "rom_gb": 256, "ram_gb": 8, "lowest_price": 25999, "price_per_gb": 101.56, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,886426117.html", "title": "X7 256 GB 8 GB", "monitor": true}, {"sku": "1464313477", "brand": "POCO", "model_name": "X8 Pro", "rom_gb": 512, "ram_gb": 12, "lowest_price": 27199.0, "price_per_gb": 53.12, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1464313477.html", "title": "X8 Pro 512 GB 12 GB", "monitor": true}, {"sku": "1602322017", "brand": "POCO", "model_name": "X8 Pro 8+", "rom_gb": 512, "ram_gb": 6, "lowest_price": 27999, "price_per_gb": 54.69, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1602322017.html", "title": "X8 Pro 8+6 GB RAM 512GB ROM (İTHALATÇI GARANTİLİ)", "monitor": true}, {"sku": "905478276", "brand": "POCO", "model_name": "X7", "rom_gb": 512, "ram_gb": 12, "lowest_price": 31999, "price_per_gb": 62.5, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,905478276.html", "title": "X7 512 GB 12 GB", "monitor": true}, {"sku": "1453674397", "brand": "POCO", "model_name": "X8 Pro Iron Man", "rom_gb": 512, "ram_gb": null, "lowest_price": 32988.59, "price_per_gb": 64.43, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1453674397.html", "title": "X8 Pro Iron Man 512 GB", "monitor": true}, {"sku": "1359172826", "brand": "POCO", "model_name": "X8 Pro Max", "rom_gb": 256, "ram_gb": null, "lowest_price": 37199, "price_per_gb": 145.31, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1359172826.html", "title": "X8 Pro Max 256 GB", "monitor": true}, {"sku": "1464605558", "brand": "POCO", "model_name": "X8 Pro Max", "rom_gb": 512, "ram_gb": null, "lowest_price": 39000.0, "price_per_gb": 76.17, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1464605558.html", "title": "X8 Pro Max 512 GB", "monitor": true}, {"sku": "1127896958", "brand": "Samsung", "model_name": "Galaxy A07", "rom_gb": 128, "ram_gb": null, "lowest_price": 7999.0, "price_per_gb": 62.49, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1127896958.html", "title": "Galaxy A07 128 GB", "monitor": true}, {"sku": "1323646772", "brand": "Samsung", "model_name": "Galaxy A07 5G", "rom_gb": 128, "ram_gb": null, "lowest_price": 9739.0, "price_per_gb": 76.09, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1323646772.html", "title": "Galaxy A07 5G 128 GB", "monitor": true}, {"sku": "1194669413", "brand": "Samsung", "model_name": "Galaxy A17", "rom_gb": 128, "ram_gb": null, "lowest_price": 11499.0, "price_per_gb": 89.84, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1194669413.html", "title": "Galaxy A17 128 GB", "monitor": true}, {"sku": "1170242293", "brand": "Samsung", "model_name": "Galaxy A17 5G", "rom_gb": 128, "ram_gb": 6, "lowest_price": 12749.0, "price_per_gb": 99.6, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1170242293.html", "title": "Galaxy A17 5G 128 GB 6 GB", "monitor": true}, {"sku": "999742996", "brand": "Samsung", "model_name": "Galaxy A26", "rom_gb": 128, "ram_gb": 6, "lowest_price": 14820.0, "price_per_gb": 115.78, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,999742996.html", "title": "Galaxy A26 128 GB 6 GB", "monitor": true}, {"sku": "1050230409", "brand": "Samsung", "model_name": "Galaxy A17 5G", "rom_gb": 256, "ram_gb": 8, "lowest_price": 15069.0, "price_per_gb": 58.86, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1050230409.html", "title": "Galaxy A17 5G 256 GB 8 GB", "monitor": true}, {"sku": "802026406", "brand": "Samsung", "model_name": "Galaxy A26", "rom_gb": 256, "ram_gb": 8, "lowest_price": 16819.2, "price_per_gb": 65.7, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,802026406.html", "title": "Galaxy A26 256 GB 8 GB", "monitor": true}, {"sku": "1201377153", "brand": "Samsung", "model_name": "Galaxy A17 5G", "rom_gb": 128, "ram_gb": 4, "lowest_price": 17563, "price_per_gb": 137.21, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1201377153.html", "title": "Galaxy A17 5G 128 GB 4 GB", "monitor": true}, {"sku": "988678514", "brand": "Samsung", "model_name": "Galaxy A36", "rom_gb": 128, "ram_gb": null, "lowest_price": 18949.0, "price_per_gb": 148.04, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,988678514.html", "title": "Galaxy A36 128 GB", "monitor": true}, {"sku": "1469473751", "brand": "Samsung", "model_name": "Galaxy A37", "rom_gb": 128, "ram_gb": 6, "lowest_price": 20046.16, "price_per_gb": 156.61, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1469473751.html", "title": "Galaxy A37 128 GB 6 GB", "monitor": true}, {"sku": "1469181972", "brand": "Samsung", "model_name": "Galaxy A37", "rom_gb": 128, "ram_gb": 8, "lowest_price": 19899.0, "price_per_gb": 155.46, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1469181972.html", "title": "Galaxy A37 128 GB 8 GB", "monitor": true}, {"sku": "799034255", "brand": "Samsung", "model_name": "Galaxy A36", "rom_gb": 256, "ram_gb": null, "lowest_price": 19999, "price_per_gb": 78.12, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,799034255.html", "title": "Galaxy A36 256 GB", "monitor": true}, {"sku": "1208733025", "brand": "Samsung", "model_name": "Galaxy A37", "rom_gb": 256, "ram_gb": 8, "lowest_price": 21999, "price_per_gb": 85.93, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1208733025.html", "title": "Galaxy A37 256 GB 8 GB", "monitor": true}, {"sku": "1474720519", "brand": "Samsung", "model_name": "Galaxy A37", "rom_gb": 256, "ram_gb": null, "lowest_price": 22880.85, "price_per_gb": 89.38, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1474720519.html", "title": "Galaxy A37 256 GB Cep Telefonu", "monitor": true}, {"sku": "1472018354", "brand": "Samsung", "model_name": "Galaxy A37 5G -", "rom_gb": 128, "ram_gb": null, "lowest_price": 22197.0, "price_per_gb": 173.41, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1472018354.html", "title": "Galaxy A37 5G - 128 GB", "monitor": true}, {"sku": "988626632", "brand": "Samsung", "model_name": "Galaxy A56", "rom_gb": 128, "ram_gb": null, "lowest_price": 23408.64, "price_per_gb": 182.88, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,988626632.html", "title": "Galaxy A56 128 GB", "monitor": true}, {"sku": "786484511", "brand": "Samsung", "model_name": "Galaxy A56", "rom_gb": 256, "ram_gb": null, "lowest_price": 23991.37, "price_per_gb": 93.72, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,786484511.html", "title": "Galaxy A56 256 GB", "monitor": true}, {"sku": "1057404327", "brand": "Samsung", "model_name": "Galaxy A57", "rom_gb": 128, "ram_gb": 8, "lowest_price": 26199.0, "price_per_gb": 204.68, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1057404327.html", "title": "Galaxy A57 128 GB 8 GB", "monitor": true}, {"sku": "1465700697", "brand": "Samsung", "model_name": "Galaxy A57", "rom_gb": 256, "ram_gb": 8, "lowest_price": 26999.0, "price_per_gb": 105.46, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1465700697.html", "title": "Galaxy A57 256 GB 8 GB", "monitor": true}, {"sku": "1473980568", "brand": "Samsung", "model_name": "Galaxy A57", "rom_gb": 256, "ram_gb": null, "lowest_price": 30654.55, "price_per_gb": 119.74, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1473980568.html", "title": "Galaxy A57 256 GB", "monitor": true}, {"sku": "915517207", "brand": "Xiaomi", "model_name": "Redmi A5", "rom_gb": 128, "ram_gb": null, "lowest_price": 7999, "price_per_gb": 62.49, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,915517207.html", "title": "Redmi A5 128 GB", "monitor": true}, {"sku": "1188928546", "brand": "Xiaomi", "model_name": "Redmi 15C", "rom_gb": 128, "ram_gb": 6, "lowest_price": 8999.0, "price_per_gb": 70.3, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1188928546.html", "title": "Redmi 15C 128 GB 6 GB", "monitor": true}, {"sku": "1114979900", "brand": "Xiaomi", "model_name": "Redmi 15C", "rom_gb": 256, "ram_gb": 8, "lowest_price": 10299.0, "price_per_gb": 40.23, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1114979900.html", "title": "Redmi 15C 256 GB 8 GB", "monitor": true}, {"sku": "692136486", "brand": "Xiaomi", "model_name": "Redmi Note 14", "rom_gb": 256, "ram_gb": null, "lowest_price": 11999, "price_per_gb": 46.87, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,692136486.html", "title": "Redmi Note 14 256 GB", "monitor": true}, {"sku": "1145381088", "brand": "Xiaomi", "model_name": "Redmi 15", "rom_gb": 256, "ram_gb": null, "lowest_price": 13008.0, "price_per_gb": 50.81, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1145381088.html", "title": "Redmi 15 256 GB", "monitor": true}, {"sku": "919295533", "brand": "Xiaomi", "model_name": "Redmi Note 14", "rom_gb": 128, "ram_gb": null, "lowest_price": 13248, "price_per_gb": 103.5, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,919295533.html", "title": "Redmi Note 14 128 GB", "monitor": true}, {"sku": "1258833026", "brand": "Xiaomi", "model_name": "Redmi 15C 5G", "rom_gb": 256, "ram_gb": null, "lowest_price": 14098.65, "price_per_gb": 55.07, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1258833026.html", "title": "Redmi 15C 5G 256 GB Siyah", "monitor": true}, {"sku": "1161241821", "brand": "Xiaomi", "model_name": "Redmi Note 15", "rom_gb": 256, "ram_gb": null, "lowest_price": 14399.0, "price_per_gb": 56.25, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1161241821.html", "title": "Redmi Note 15 256 GB", "monitor": true}, {"sku": "1053248803", "brand": "Xiaomi", "model_name": "Redmi Note 14S", "rom_gb": 256, "ram_gb": 8, "lowest_price": 14585.49, "price_per_gb": 56.97, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1053248803.html", "title": "Redmi Note 14S 256 GB 8 GB", "monitor": true}, {"sku": "692136487", "brand": "Xiaomi", "model_name": "Redmi Note 14 Pro", "rom_gb": 256, "ram_gb": 8, "lowest_price": 14750.0, "price_per_gb": 57.62, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,692136487.html", "title": "Redmi Note 14 Pro 256 GB 8 GB", "monitor": true}, {"sku": "1188290434", "brand": "Xiaomi", "model_name": "Redmi Note 14 Pro 5G", "rom_gb": 256, "ram_gb": 8, "lowest_price": 14999, "price_per_gb": 58.59, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1188290434.html", "title": "Redmi Note 14 Pro 5G 256 GB 8 GB", "monitor": true}, {"sku": "1337432076", "brand": "Xiaomi", "model_name": "Redmi Note 15 Pro", "rom_gb": 256, "ram_gb": 8, "lowest_price": 15899, "price_per_gb": 62.11, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1337432076.html", "title": "Redmi Note 15 Pro 256 GB 8 GB", "monitor": true}, {"sku": "917295168", "brand": "Xiaomi", "model_name": "Redmi Note 14 Pro", "rom_gb": 512, "ram_gb": 12, "lowest_price": 16450.0, "price_per_gb": 32.13, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,917295168.html", "title": "Redmi Note 14 Pro 512 GB 12 GB", "monitor": true}, {"sku": "753133640", "brand": "Xiaomi", "model_name": "Redmi Note 14 5G", "rom_gb": 256, "ram_gb": null, "lowest_price": 16570.6, "price_per_gb": 64.73, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,753133640.html", "title": "Redmi Note 14 5G 256 GB", "monitor": true}, {"sku": "1138486087", "brand": "Xiaomi", "model_name": "Redmi 15 5G", "rom_gb": 256, "ram_gb": null, "lowest_price": 16811.63, "price_per_gb": 65.67, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1138486087.html", "title": "Redmi 15 5G 256 GB", "monitor": true}, {"sku": "1568866644", "brand": "Xiaomi", "model_name": "Redmi Note 15 5G", "rom_gb": 256, "ram_gb": null, "lowest_price": 16998.0, "price_per_gb": 66.4, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1568866644.html", "title": "Redmi Note 15 5G 256 GB", "monitor": true}, {"sku": "1140705593", "brand": "Xiaomi", "model_name": "Redmi Note 15 Pro", "rom_gb": 512, "ram_gb": 12, "lowest_price": 17999.66, "price_per_gb": 35.16, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1140705593.html", "title": "Redmi Note 15 Pro 512 GB 12 GB", "monitor": true}, {"sku": "968340256", "brand": "Xiaomi", "model_name": "Redmi Note 14S", "rom_gb": 512, "ram_gb": 12, "lowest_price": 19894.16, "price_per_gb": 38.86, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,968340256.html", "title": "Redmi Note 14S 512 GB 12 GB", "monitor": true}, {"sku": "1337434798", "brand": "Xiaomi", "model_name": "Redmi Note 15 Pro 5G", "rom_gb": 256, "ram_gb": null, "lowest_price": 22849.0, "price_per_gb": 89.25, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1337434798.html", "title": "Redmi Note 15 Pro 5G 256 GB", "monitor": true}, {"sku": "1461324218", "brand": "Xiaomi", "model_name": "Redmi Note 15 Pro", "rom_gb": 512, "ram_gb": 8, "lowest_price": 24749, "price_per_gb": 48.34, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1461324218.html", "title": "Redmi Note 15 Pro 8GB Ram 512GB", "monitor": true}, {"sku": "692136578", "brand": "Xiaomi", "model_name": "Redmi Note 14 Pro Plus", "rom_gb": 512, "ram_gb": 12, "lowest_price": 26198.0, "price_per_gb": 51.17, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,692136578.html", "title": "Redmi Note 14 Pro Plus 512 GB 12 GB", "monitor": true}, {"sku": "1135557250", "brand": "Xiaomi", "model_name": "Redmi Note 15 Pro Plus", "rom_gb": 256, "ram_gb": 8, "lowest_price": 27093.98, "price_per_gb": 105.84, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1135557250.html", "title": "Redmi Note 15 Pro Plus 256 GB 8 GB", "monitor": true}, {"sku": "1378068746", "brand": "Xiaomi", "model_name": "Redmi Note 14 Pro Plus", "rom_gb": 256, "ram_gb": 12, "lowest_price": 27285.92, "price_per_gb": 106.59, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1378068746.html", "title": "Redmi Note 14 Pro Plus 256 GB 12 GB", "monitor": true}, {"sku": "1454923795", "brand": "Xiaomi", "model_name": "Redmi Note 15 Pro Plus", "rom_gb": 512, "ram_gb": 12, "lowest_price": 29060.0, "price_per_gb": 56.76, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1454923795.html", "title": "Redmi Note 15 Pro Plus 512 GB 12 GB", "monitor": true}, {"sku": "1473051571", "brand": "Xiaomi", "model_name": "Redmi Note 14 Pro Plus", "rom_gb": 512, "ram_gb": 16, "lowest_price": 35999, "price_per_gb": 70.31, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,1473051571.html", "title": "Redmi Note 14 Pro Plus 512 GB 16 GB", "monitor": true}, {"sku": "877374811", "brand": "Xiaomi", "model_name": "Redmi Note 14 Pro 5G", "rom_gb": 512, "ram_gb": 12, "lowest_price": 39999, "price_per_gb": 78.12, "product_url": "https://www.akakce.com/cep-telefonu/en-ucuz-x-fiyati,877374811.html", "title": "Redmi Note 14 Pro 5G 512 GB 12 GB", "monitor": true}]};
+const EMBEDDED_HISTORY = {"908320846": {"2026-07-02": 28999, "2026-07-03": 28999, "2026-07-04": 27985.0, "2026-07-05": 27985.0, "2026-07-06": 26999.0}, "1074431780": {"2026-07-02": 29999, "2026-07-03": 29999, "2026-07-04": 29999, "2026-07-05": 29999, "2026-07-06": 27999.0}, "1352599186": {"2026-07-02": 29999, "2026-07-03": 29999, "2026-07-04": 29999, "2026-07-05": 29999, "2026-07-06": 29999}, "1372271394": {"2026-07-02": 31499, "2026-07-03": 31499, "2026-07-04": 31499, "2026-07-05": 31100.0, "2026-07-06": 29749.0}, "1569326362": {"2026-07-02": 39999, "2026-07-03": 39999, "2026-07-04": 39999, "2026-07-05": 39999, "2026-07-06": 39999}, "1454305890": {"2026-07-02": 55499, "2026-07-03": 55499, "2026-07-04": 55499, "2026-07-05": 55499, "2026-07-06": 54499.0}, "1603792602": {"2026-07-02": 9497, "2026-07-03": 9497, "2026-07-04": 9497, "2026-07-05": 9497, "2026-07-06": 9497}, "1283695048": {"2026-07-02": 18999, "2026-07-03": 18999, "2026-07-04": 18999, "2026-07-05": 18999, "2026-07-06": 18999}, "1310126058": {"2026-07-02": 20999, "2026-07-03": 20999, "2026-07-04": 20999, "2026-07-05": 20999, "2026-07-06": 20999}, "905463218": {"2026-07-02": 23990, "2026-07-03": 23990, "2026-07-04": 25012.0, "2026-07-05": 25599.0, "2026-07-06": 25999.0}, "1140705980": {"2026-07-02": 24999, "2026-07-03": 24999, "2026-07-04": 24999, "2026-07-05": 24999, "2026-07-06": 24999}, "891189150": {"2026-07-02": 24999, "2026-07-03": 24999, "2026-07-04": 24999, "2026-07-05": 24999, "2026-07-06": 24999}, "1348534645": {"2026-07-02": 24999, "2026-07-03": 24999, "2026-07-04": 24999, "2026-07-05": 24999, "2026-07-06": 24999}, "886426117": {"2026-07-02": 25999, "2026-07-03": 25999, "2026-07-04": 25999, "2026-07-05": 25999, "2026-07-06": 25999}, "1464313477": {"2026-07-02": 26399, "2026-07-03": 27199.0, "2026-07-04": 27199.0, "2026-07-05": 27199.0, "2026-07-06": 27199.0}, "1602322017": {"2026-07-02": 27999, "2026-07-03": 27999, "2026-07-04": 27999, "2026-07-05": 27999, "2026-07-06": 27999}, "905478276": {"2026-07-02": 31999, "2026-07-03": 31999, "2026-07-04": 31999, "2026-07-05": 31999, "2026-07-06": 31999}, "1453674397": {"2026-07-02": 32988.59, "2026-07-03": 32988.59, "2026-07-04": 32988.59, "2026-07-05": 32988.59, "2026-07-06": 32988.59}, "1359172826": {"2026-07-02": 37199, "2026-07-03": 37199, "2026-07-04": 37199, "2026-07-05": 37199, "2026-07-06": 37199}, "1464605558": {"2026-07-02": 40788.23, "2026-07-03": 39000.0, "2026-07-04": 39000.0, "2026-07-05": 39000.0, "2026-07-06": 39000.0}, "1127896958": {"2026-07-02": 8462.95, "2026-07-03": 8054.4, "2026-07-04": 8372.99, "2026-07-05": 8397.12, "2026-07-06": 7999.0}, "1323646772": {"2026-07-02": 9750.0, "2026-07-03": 9752.0, "2026-07-04": 9739.0, "2026-07-05": 9739.0, "2026-07-06": 9739.0}, "1194669413": {"2026-07-02": 11387.03, "2026-07-03": 11499.0, "2026-07-04": 11499.0, "2026-07-05": 11499.0, "2026-07-06": 11499.0}, "1170242293": {"2026-07-02": 12750.0, "2026-07-03": 12750.01, "2026-07-04": 12749.0, "2026-07-05": 12749.0, "2026-07-06": 12749.0}, "999742996": {"2026-07-02": 14820, "2026-07-03": 14820, "2026-07-04": 14799.0, "2026-07-05": 14820.0, "2026-07-06": 14820.0}, "1050230409": {"2026-07-02": 15069, "2026-07-03": 15490.8, "2026-07-04": 15453.75, "2026-07-05": 15453.75, "2026-07-06": 15069.0}, "802026406": {"2026-07-02": 16799, "2026-07-03": 16899.0, "2026-07-04": 16899.0, "2026-07-05": 16899.0, "2026-07-06": 16819.2}, "1201377153": {"2026-07-02": 17563, "2026-07-03": 17563, "2026-07-04": 17563, "2026-07-05": 17563, "2026-07-06": 17563}, "988678514": {"2026-07-02": 18949, "2026-07-03": 18949, "2026-07-04": 17429.0, "2026-07-05": 18949.0, "2026-07-06": 18949.0}, "1469473751": {"2026-07-02": 19804.94, "2026-07-03": 19775.9, "2026-07-04": 19775.9, "2026-07-05": 20046.16, "2026-07-06": 20046.16}, "1469181972": {"2026-07-02": 19979, "2026-07-03": 19979, "2026-07-04": 19899.0, "2026-07-05": 19899.0, "2026-07-06": 19899.0}, "799034255": {"2026-07-02": 19999, "2026-07-03": 19999, "2026-07-04": 19999, "2026-07-05": 19999, "2026-07-06": 19999}, "1208733025": {"2026-07-02": 21999, "2026-07-03": 21999, "2026-07-04": 21999, "2026-07-05": 21999, "2026-07-06": 21999}, "1474720519": {"2026-07-02": 22880.85, "2026-07-03": 22880.85, "2026-07-04": 22880.85, "2026-07-05": 22880.85, "2026-07-06": 22880.85}, "1472018354": {"2026-07-02": 22495, "2026-07-03": 22495, "2026-07-04": 22297.0, "2026-07-05": 22297.0, "2026-07-06": 22197.0}, "988626632": {"2026-07-02": 23445.25, "2026-07-03": 22999.0, "2026-07-04": 23449.0, "2026-07-05": 23499.0, "2026-07-06": 23408.64}, "786484511": {"2026-07-02": 24249.55, "2026-07-03": 24439.41, "2026-07-04": 23799.0, "2026-07-05": 24351.54, "2026-07-06": 23991.37}, "1057404327": {"2026-07-02": 26357, "2026-07-03": 26270.03, "2026-07-04": 25152.0, "2026-07-05": 26199.0, "2026-07-06": 26199.0}, "1465700697": {"2026-07-02": 27599, "2026-07-03": 27799.0, "2026-07-04": 27799.0, "2026-07-05": 27799.0, "2026-07-06": 26999.0}, "1473980568": {"2026-07-02": 30654.55, "2026-07-03": 30654.55, "2026-07-04": 30654.55, "2026-07-05": 30654.55, "2026-07-06": 30654.55}, "915517207": {"2026-07-02": 7999, "2026-07-03": 7999, "2026-07-04": 7999, "2026-07-05": 7999, "2026-07-06": 7999}, "1188928546": {"2026-07-02": 9033.55, "2026-07-03": 8999.0, "2026-07-04": 8999.0, "2026-07-05": 8999.0, "2026-07-06": 8999.0}, "1114979900": {"2026-07-02": 10328.97, "2026-07-03": 10449.0, "2026-07-04": 10449.0, "2026-07-05": 10599.0, "2026-07-06": 10299.0}, "692136486": {"2026-07-02": 11999, "2026-07-03": 11999, "2026-07-04": 11999, "2026-07-05": 11999, "2026-07-06": 11999}, "1145381088": {"2026-07-02": 12480, "2026-07-03": 13008.0, "2026-07-04": 13008.0, "2026-07-05": 13008.0, "2026-07-06": 13008.0}, "919295533": {"2026-07-02": 13248, "2026-07-03": 13248, "2026-07-04": 13248, "2026-07-05": 13248, "2026-07-06": 13248}, "1258833026": {"2026-07-02": 14098.65, "2026-07-03": 14098.65, "2026-07-04": 14098.65, "2026-07-05": 14098.65, "2026-07-06": 14098.65}, "1161241821": {"2026-07-02": 13979.7, "2026-07-03": 14199.0, "2026-07-04": 14399.0, "2026-07-05": 14399.0, "2026-07-06": 14399.0}, "1053248803": {"2026-07-02": 14625, "2026-07-03": 14625, "2026-07-04": 14585.49, "2026-07-05": 14585.49, "2026-07-06": 14585.49}, "692136487": {"2026-07-02": 14651, "2026-07-03": 14750.0, "2026-07-04": 14750.0, "2026-07-05": 14750.0, "2026-07-06": 14750.0}, "1188290434": {"2026-07-02": 14999, "2026-07-03": 14999, "2026-07-04": 14999, "2026-07-05": 14999, "2026-07-06": 14999}, "1337432076": {"2026-07-02": 15899, "2026-07-03": 15899, "2026-07-04": 15899, "2026-07-05": 15899, "2026-07-06": 15899}, "917295168": {"2026-07-02": 15965.31, "2026-07-03": 16450.0, "2026-07-04": 16450.0, "2026-07-05": 16450.0, "2026-07-06": 16450.0}, "753133640": {"2026-07-02": 16440.13, "2026-07-03": 16440.13, "2026-07-04": 16570.6, "2026-07-05": 16570.6, "2026-07-06": 16570.6}, "1138486087": {"2026-07-02": 16848, "2026-07-03": 16848, "2026-07-04": 16837.44, "2026-07-05": 16811.63, "2026-07-06": 16811.63}, "1568866644": {"2026-07-02": 17998, "2026-07-03": 16998.0, "2026-07-04": 16998.0, "2026-07-05": 16998.0, "2026-07-06": 16998.0}, "1140705593": {"2026-07-02": 17999, "2026-07-03": 17999.66, "2026-07-04": 17999.66, "2026-07-05": 17999.66, "2026-07-06": 17999.66}, "968340256": {"2026-07-02": 19894, "2026-07-03": 19894.16, "2026-07-04": 19894.16, "2026-07-05": 19894.16, "2026-07-06": 19894.16}, "1337434798": {"2026-07-02": 22699, "2026-07-03": 22699.53, "2026-07-04": 22699.54, "2026-07-05": 22699.54, "2026-07-06": 22849.0}, "1461324218": {"2026-07-02": 24749, "2026-07-03": 24749, "2026-07-04": 24749, "2026-07-05": 24749, "2026-07-06": 24749}, "692136578": {"2026-07-02": 23198, "2026-07-03": 26198.0, "2026-07-04": 26198.0, "2026-07-05": 23399.02, "2026-07-06": 26198.0}, "1135557250": {"2026-07-02": 26924.65, "2026-07-03": 26924.67, "2026-07-04": 26924.65, "2026-07-05": 27093.98, "2026-07-06": 27093.98}, "1378068746": {"2026-07-02": 27285.92, "2026-07-03": 27285.92, "2026-07-04": 27285.92, "2026-07-05": 27285.92, "2026-07-06": 27285.92}, "1454923795": {"2026-07-02": 29030, "2026-07-03": 29070.0, "2026-07-04": 29070.0, "2026-07-05": 29060.0, "2026-07-06": 29060.0}, "1473051571": {"2026-07-02": 35999, "2026-07-03": 35999, "2026-07-04": 35999, "2026-07-05": 35999, "2026-07-06": 35999}, "877374811": {"2026-07-02": 39999, "2026-07-03": 39999, "2026-07-04": 39999, "2026-07-05": 39999, "2026-07-06": 39999}}; // populated with real price_history.json content when building the standalone HTML
+let allProducts = [];
+let sortKey = 'brand_model';
+let sortDir = 'asc';
+const trendCache = {};
+
+// Empty array = "no filter applied". Non-empty array = only show items whose
+// value is included in it (multi-select). Drives KPIs, brand cards, table.
+const state = { brand: [], product: [], priceMin: null, priceMax: null };
+// Independent filter state for the Price Trend chart's quick filter — never
+// touches `state`, matching the established pattern from the noon.com build.
+const trendState = { brand: [], product: [] };
+// Independent filter state for the Best Value Leaderboard's brand quick filter.
+const lbState = { brand: [] };
+const msUI = {};
+let msInstances = [];
+
+const BRAND_ORDER = ['Xiaomi', 'POCO', 'Honor', 'Samsung'];
+function brandLabel(b) { return b; }
+function configLabel(p) {
+  const rom = p.rom_gb ? `${p.rom_gb}GB` : '?';
+  const ram = p.ram_gb ? ` / ${p.ram_gb}GB RAM` : '';
+  return `${rom}${ram}`;
+}
+
+async function boot() {
+  let data;
+  if (typeof EMBEDDED_DATA !== 'undefined' && EMBEDDED_DATA && EMBEDDED_DATA.products) {
+    data = EMBEDDED_DATA;
+  } else {
+    const res = await fetch(API_BASE + '/api/phones');
+    data = await res.json();
+  }
+  allProducts = data.products;
+
+  document.getElementById('footer-note').textContent =
+    `Source: ${data.source} · Scraped at ${data.scraped_at} · Price = lowest listed offer for that SKU on the day of scraping. Entry & mid-range models released 2025 or later only — numbered flagship series (Xiaomi 11-17/T-series, POCO F-series, Honor Magic/V-series, Samsung S/Z/Note/Fold/Flip) and pre-2025 models are excluded. Price trend chart uses real recorded snapshots, one point per day this data has actually been re-scraped.`;
+
+  wireFilterEvents();
+  render();
+}
+
+function applyFilters(products, { skipBrand = false, skipProduct = false, skipPrice = false } = {}) {
+  return products.filter(p => {
+    if (!skipBrand && state.brand.length && !state.brand.includes(p.brand)) return false;
+    if (!skipProduct && state.product.length && !state.product.includes(p.model_name)) return false;
+    if (!skipPrice && state.priceMin !== null && p.lowest_price < state.priceMin) return false;
+    if (!skipPrice && state.priceMax !== null && p.lowest_price > state.priceMax) return false;
+    return true;
+  });
+}
+
+function uniqueSorted(arr) {
+  const s = [...new Set(arr)];
+  s.sort((a, b) => {
+    const ia = BRAND_ORDER.indexOf(a), ib = BRAND_ORDER.indexOf(b);
+    if (ia !== -1 && ib !== -1) return ia - ib;
+    return String(a).localeCompare(String(b));
+  });
+  return s;
+}
+
+// ---------- Multi-select-with-search dropdown widget ----------
+function ensureMsUI(id) {
+  if (!msUI[id]) msUI[id] = { open: false, search: '' };
+  return msUI[id];
+}
+
+function closeAllMsPanels() {
+  Object.values(msUI).forEach(ui => { ui.open = false; });
+}
+
+function syncElevatedCard() {
+  document.querySelectorAll('.glow-card.ms-elevated').forEach(el => el.classList.remove('ms-elevated'));
+  const openId = Object.keys(msUI).find(id => msUI[id].open);
+  if (openId) {
+    const container = document.getElementById(openId);
+    const card = container && container.closest('.glow-card');
+    if (card) card.classList.add('ms-elevated');
+  }
+}
+
+function msOptionsHtml(store, options, search, key) {
+  const filtered = options.filter(o => String(o).toLowerCase().includes(search.toLowerCase()));
+  if (!filtered.length) return '<div class="ms-empty">No matches</div>';
+  return filtered.map(o => `
+    <label class="ms-option">
+      <input type="checkbox" value="${o}" ${store[key].includes(o) ? 'checked' : ''} />
+      <span>${o}</span>
+    </label>
+  `).join('');
+}
+
+function toggleMsValue(store, key, val) {
+  const arr = store[key];
+  const idx = arr.indexOf(val);
+  if (idx >= 0) arr.splice(idx, 1); else arr.push(val);
+  render();
+}
+
+function renderMultiSelect(containerId, { store, key, options, allLabel }) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  const ui = ensureMsUI(containerId);
+
+  const labelText = store[key].length === 0
+    ? allLabel
+    : store[key].length <= 2
+      ? store[key].join(', ')
+      : `${store[key].length} selected`;
+
+  container.innerHTML = `
+    <button type="button" class="ms-button">${labelText}<span class="ms-caret">▾</span></button>
+    <div class="ms-panel" ${ui.open ? '' : 'hidden'}>
+      <div class="ms-search"><input type="text" placeholder="Search..." value="${ui.search.replace(/"/g, '&quot;')}" /></div>
+      <div class="ms-actions">
+        <button type="button" data-act="all">Select All</button>
+        <button type="button" data-act="clear">Clear</button>
+      </div>
+      <div class="ms-options">${msOptionsHtml(store, options, ui.search, key)}</div>
+    </div>
+  `;
+
+  const btn = container.querySelector('.ms-button');
+  const panel = container.querySelector('.ms-panel');
+  const searchInput = container.querySelector('.ms-search input');
+  const optionsDiv = container.querySelector('.ms-options');
+  const actionsDiv = container.querySelector('.ms-actions');
+
+  btn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const willOpen = !ui.open;
+    closeAllMsPanels();
+    ui.open = willOpen;
+    msInstances.forEach(inst => renderMultiSelect(inst.id, inst));
+    syncElevatedCard();
+  });
+  panel.addEventListener('click', (e) => e.stopPropagation());
+
+  function wireOptionCheckboxes() {
+    optionsDiv.querySelectorAll('input[type=checkbox]').forEach(cb => {
+      cb.addEventListener('change', () => toggleMsValue(store, key, cb.value));
+    });
+  }
+  wireOptionCheckboxes();
+
+  searchInput.addEventListener('input', (e) => {
+    ui.search = e.target.value;
+    optionsDiv.innerHTML = msOptionsHtml(store, options, ui.search, key);
+    wireOptionCheckboxes();
+  });
+
+  actionsDiv.querySelector('[data-act="all"]').addEventListener('click', () => {
+    store[key] = options.slice();
+    render();
+  });
+  actionsDiv.querySelector('[data-act="clear"]').addEventListener('click', () => {
+    store[key] = [];
+    render();
+  });
+}
+
+document.addEventListener('click', () => {
+  if (Object.values(msUI).some(ui => ui.open)) {
+    closeAllMsPanels();
+    msInstances.forEach(inst => renderMultiSelect(inst.id, inst));
+    syncElevatedCard();
+  }
+});
+
+function render() {
+  const brandOptions = uniqueSorted(applyFilters(allProducts, { skipBrand: true }).map(p => p.brand));
+  const productOptions = uniqueSorted(applyFilters(allProducts, { skipProduct: true }).map(p => p.model_name));
+
+  state.brand = state.brand.filter(v => brandOptions.includes(v));
+  state.product = state.product.filter(v => productOptions.includes(v));
+
+  const allBrandOptions = uniqueSorted(allProducts.map(p => p.brand));
+  const allProductOptions = uniqueSorted(allProducts.map(p => p.model_name));
+  trendState.brand = trendState.brand.filter(v => allBrandOptions.includes(v));
+  trendState.product = trendState.product.filter(v => allProductOptions.includes(v));
+  lbState.brand = lbState.brand.filter(v => allBrandOptions.includes(v));
+
+  msInstances = [
+    { id: 'ms-brand', store: state, key: 'brand', options: brandOptions, allLabel: 'All Brands' },
+    { id: 'ms-product', store: state, key: 'product', options: productOptions, allLabel: 'All Models' },
+    { id: 'ms-brand-quick', store: trendState, key: 'brand', options: allBrandOptions, allLabel: 'All Brands' },
+    { id: 'ms-product-quick', store: trendState, key: 'product', options: allProductOptions, allLabel: 'All Models' },
+    { id: 'ms-lb-brand', store: lbState, key: 'brand', options: allBrandOptions, allLabel: 'All Brands' },
+  ];
+  msInstances.forEach(inst => renderMultiSelect(inst.id, inst));
+  syncElevatedCard();
+
+  const filtered = applyFilters(allProducts);
+
+  renderKPI(filtered);
+  renderBrandCards(filtered);
+  try { renderTrendChart(); } catch (e) { console.warn('Trend chart skipped:', e); }
+  renderPositionChart(filtered);
+  renderLeaderboard();
+  renderTable(filtered);
+
+  document.getElementById('header-sub').textContent =
+    `Xiaomi / POCO / Honor / Samsung · Entry & mid-range · akakce.com lowest listed price · ${filtered.length} / ${allProducts.length} models matched`;
+}
+
+function renderKPI(filtered) {
+  const grid = document.getElementById('kpi-grid');
+  const brandsCovered = uniqueSorted(filtered.map(p => p.brand)).length;
+  const lowestOverall = filtered.length ? Math.min(...filtered.map(p => p.lowest_price)) : 0;
+  const avgOverall = filtered.length ? (filtered.reduce((s, p) => s + p.lowest_price, 0) / filtered.length) : 0;
+
+  grid.innerHTML = `
+    <div class="glow-card kpi-card total"><div class="kpi-inner">
+      <div class="kpi-label">Total Products</div>
+      <div class="kpi-value">${filtered.length}<span class="unit">models</span></div>
+      <div class="kpi-sub">Full sample: ${allProducts.length} models</div>
+    </div></div>
+    <div class="glow-card kpi-card brands"><div class="kpi-inner">
+      <div class="kpi-label">Brands Covered</div>
+      <div class="kpi-value">${brandsCovered}<span class="unit">brands</span></div>
+      <div class="kpi-sub">Xiaomi · POCO · Honor · Samsung</div>
+    </div></div>
+    <div class="glow-card kpi-card lowest"><div class="kpi-inner">
+      <div class="kpi-label">Lowest Price (Filtered)</div>
+      <div class="kpi-value">${lowestOverall.toLocaleString('tr-TR')}<span class="unit">TL</span></div>
+      <div class="kpi-sub">Best listed offer</div>
+    </div></div>
+    <div class="glow-card kpi-card avg"><div class="kpi-inner">
+      <div class="kpi-label">Average Price (Filtered)</div>
+      <div class="kpi-value">${avgOverall.toFixed(0).toLocaleString('tr-TR')}<span class="unit">TL</span></div>
+      <div class="kpi-sub">Mean of sampled models</div>
+    </div></div>
+  `;
+}
+
+function renderBrandCards(filtered) {
+  const grid = document.getElementById('summary-grid');
+  const brands = uniqueSorted(filtered.map(p => p.brand));
+
+  if (!brands.length) {
+    grid.innerHTML = `<div class="glow-card brand-card"><div class="sub">No products match the current filters</div></div>`;
+    return;
+  }
+
+  grid.innerHTML = '';
+  brands.forEach(b => {
+    const items = filtered.filter(p => p.brand === b);
+    const prices = items.map(p => p.lowest_price);
+    const cheapest = items.reduce((min, p) => p.lowest_price < min.lowest_price ? p : min, items[0]);
+    const minPrice = Math.min(...prices);
+    const avgPrice = prices.reduce((s, v) => s + v, 0) / prices.length;
+
+    const isActive = state.brand.length === 1 && state.brand[0] === b;
+    const el = document.createElement('div');
+    el.className = 'glow-card brand-card ' + b + (isActive ? ' is-active' : '');
+    el.innerHTML = `
+      <h3>${brandLabel(b)}</h3>
+      <div class="price-row">${minPrice.toLocaleString('tr-TR')} <span style="font-size:12px;font-weight:400;color:var(--muted);">TL from</span></div>
+      <div class="sub">
+        ${items.length} models sampled · avg ${avgPrice.toFixed(0)} TL<br/>
+        Cheapest model: <a href="${cheapest.product_url}" target="_blank" onclick="event.stopPropagation()">${cheapest.model_name} ${configLabel(cheapest)}</a>
+      </div>
+      <div class="hint">Click to filter by this brand</div>
+    `;
+    el.addEventListener('click', () => {
+      state.brand = isActive ? [] : [b];
+      render();
+    });
+    grid.appendChild(el);
+  });
+}
+
+// ---------- Real price history (no simulated/demo data) ----------
+async function getRealTrend(sku) {
+  if (trendCache[sku]) return trendCache[sku];
+  let series = null;
+  try {
+    const res = await fetch(`${API_BASE}/api/trend?sku=${encodeURIComponent(sku)}`);
+    if (res.ok) {
+      const data = await res.json();
+      if (data.series && data.series.length) series = data.series;
+    }
+  } catch (e) { /* no backend reachable (e.g. standalone file) — fall back below */ }
+  if (!series) {
+    const hist = EMBEDDED_HISTORY[sku];
+    if (hist) series = Object.keys(hist).sort().map(d => ({ date: d, price: hist[d] }));
+  }
+  trendCache[sku] = series || [];
+  return trendCache[sku];
+}
+
+// Dependency-free SVG line chart — no external library needed.
+async function renderTrendChart() {
+  const wrap = document.getElementById('trendChartWrap');
+  const note = document.getElementById('trend-note');
+  const badge = document.getElementById('trend-days-badge');
+
+  let lines = [];
+  if (trendState.product.length) {
+    lines = trendState.product
+      .map(name => allProducts.find(pr => pr.model_name === name))
+      .filter(Boolean)
+      .slice(0, 5);
+    if (note) {
+      note.textContent = trendState.product.length === 1
+        ? `Showing selected model: ${trendState.product[0]}`
+        : `Showing ${lines.length} selected models${trendState.product.length > 5 ? ' (first 5 of ' + trendState.product.length + ')' : ''}`;
+    }
+  } else if (trendState.brand.length) {
+    const pool = allProducts.filter(p => trendState.brand.includes(p.brand));
+    lines = pool.slice().sort((a, b) => a.lowest_price - b.lowest_price).slice(0, 3);
+    if (note) note.textContent = `Showing 3 cheapest models across ${trendState.brand.length} selected brand(s)`;
+  } else {
+    // Default: cheapest model from each brand, one line per brand.
+    lines = BRAND_ORDER.map(b => {
+      const pool = allProducts.filter(p => p.brand === b);
+      if (!pool.length) return null;
+      return pool.reduce((min, p) => p.lowest_price < min.lowest_price ? p : min, pool[0]);
+    }).filter(Boolean);
+    if (note) note.textContent = 'Cheapest model per brand';
+  }
+
+  if (!wrap) return;
+  if (!lines.length) {
+    if (badge) badge.style.display = 'none';
+    wrap.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:13px;">No data for the current filter</div>';
+    return;
+  }
+
+  const seriesList = await Promise.all(lines.map(p => getRealTrend(p.sku)));
+  const allDates = Array.from(new Set(seriesList.flatMap(s => s.map(pt => pt.date)))).sort();
+  const daysRecorded = allDates.length;
+
+  if (badge) {
+    badge.style.display = 'inline-block';
+    badge.textContent = daysRecorded <= 1 ? 'real data · 1 day recorded' : `real data · ${daysRecorded} days recorded`;
+  }
+
+  if (daysRecorded === 0) {
+    wrap.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:13px;">No price history recorded for this selection yet</div>';
+    return;
+  }
+
+  if (daysRecorded === 1) {
+    const colorCycle = ['#7c5cff', '#22d3ee', '#ff2e88', '#ffb020', '#33e2a0'];
+    wrap.innerHTML = `
+      <div style="display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;gap:14px;">
+        <div style="color:var(--muted);font-size:12px;max-width:640px;text-align:center;line-height:1.6;">
+          Only one real price snapshot has been recorded so far (${allDates[0]}). A trend line needs at least two days of
+          real data — run the daily update script on a later day and this turns into a real multi-point chart automatically.
+        </div>
+        <div style="display:flex;gap:22px;flex-wrap:wrap;justify-content:center;">
+          ${lines.map((p, li) => {
+            const pt = seriesList[li][seriesList[li].length - 1];
+            const price = pt ? pt.price : p.lowest_price;
+            return `<div style="text-align:center;">
+              <div style="width:10px;height:10px;border-radius:2px;background:${colorCycle[li % colorCycle.length]};margin:0 auto 8px;"></div>
+              <div style="font-size:20px;font-weight:700;color:#fff;">${price.toLocaleString('tr-TR')} TL</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:2px;">${p.model_name} (${p.brand})</div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>`;
+    return;
+  }
+
+  const colorCycle = ['#7c5cff', '#22d3ee', '#ff2e88', '#ffb020', '#33e2a0'];
+  const labels = allDates;
+  const perSeries = seriesList.map(s => {
+    const byDate = Object.fromEntries(s.map(pt => [pt.date, pt.price]));
+    return labels.map(d => (d in byDate ? byDate[d] : null));
+  });
+  const allValues = perSeries.flat().filter(v => v !== null);
+  const rawMin = Math.min(...allValues), rawMax = Math.max(...allValues);
+  const pad = (rawMax - rawMin) * 0.12 || rawMax * 0.05 || 1;
+  const minV = rawMin - pad, maxV = rawMax + pad;
+
+  const width = 960, height = 280;
+  const m = { left: 60, right: 20, top: 16, bottom: 30 };
+  const plotW = width - m.left - m.right;
+  const plotH = height - m.top - m.bottom;
+  const xAt = i => m.left + (labels.length === 1 ? 0.5 : i / (labels.length - 1)) * plotW;
+  const yAt = v => m.top + plotH - ((v - minV) / (maxV - minV || 1)) * plotH;
+
+  let svg = `<svg viewBox="0 0 ${width} ${height}" width="100%" height="100%" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">`;
+
+  const gridLines = 4;
+  for (let g = 0; g <= gridLines; g++) {
+    const gy = m.top + (plotH / gridLines) * g;
+    const val = maxV - (maxV - minV) * (g / gridLines);
+    svg += `<line x1="${m.left}" x2="${width - m.right}" y1="${gy.toFixed(1)}" y2="${gy.toFixed(1)}" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>`;
+    svg += `<text x="${m.left - 8}" y="${(gy + 3.5).toFixed(1)}" text-anchor="end" font-size="10.5" fill="#8b93b8">${val.toFixed(0)}</text>`;
+  }
+  labels.forEach((lab, i) => {
+    svg += `<text x="${xAt(i).toFixed(1)}" y="${height - 8}" text-anchor="middle" font-size="10" fill="#8b93b8">${lab.slice(5)}</text>`;
+  });
+
+  lines.forEach((p, li) => {
+    const series = perSeries[li];
+    const color = colorCycle[li % colorCycle.length];
+    const knownIdx = series.map((v, i) => v !== null ? i : null).filter(i => i !== null);
+    if (!knownIdx.length) return;
+    const points = knownIdx.map(i => `${xAt(i).toFixed(1)},${yAt(series[i]).toFixed(1)}`).join(' ');
+    const areaPoints = `${xAt(knownIdx[0]).toFixed(1)},${(m.top + plotH).toFixed(1)} ${points} ${xAt(knownIdx[knownIdx.length-1]).toFixed(1)},${(m.top + plotH).toFixed(1)}`;
+    svg += `<polygon points="${areaPoints}" fill="${color}22" stroke="none"/>`;
+    svg += `<polyline points="${points}" fill="none" stroke="${color}" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>`;
+    knownIdx.forEach(i => {
+      svg += `<circle cx="${xAt(i).toFixed(1)}" cy="${yAt(series[i]).toFixed(1)}" r="3.5" fill="${color}"/>`;
+    });
+  });
+  svg += `</svg>`;
+
+  const legend = `<div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;margin-top:6px;">` +
+    lines.map((p, li) => `<span style="font-size:11.5px;color:#c7cce6;display:inline-flex;align-items:center;gap:6px;">
+        <span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${colorCycle[li % colorCycle.length]};"></span>
+        ${p.model_name} (${p.brand})
+      </span>`).join('') +
+    `</div>`;
+
+  wrap.innerHTML = `<div style="height:${height - 34}px;">${svg}</div>${legend}`;
+}
+
+// ---------- Brand Price Positioning (min–max range + avg marker) ----------
+const BRAND_COLORS = {
+  Xiaomi: ['var(--xiaomi-1)', 'var(--xiaomi-2)'],
+  POCO: ['var(--poco-1)', 'var(--poco-2)'],
+  Honor: ['var(--honor-1)', 'var(--honor-2)'],
+  Samsung: ['var(--samsung-1)', 'var(--samsung-2)'],
+};
+
+function renderPositionChart(filtered) {
+  const wrap = document.getElementById('positionChartWrap');
+  if (!wrap) return;
+  const brands = BRAND_ORDER.filter(b => filtered.some(p => p.brand === b));
+  if (!brands.length) {
+    wrap.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:180px;color:var(--muted);font-size:13px;">No products match the current filters</div>`;
+    return;
+  }
+
+  const globalMax = Math.max(...filtered.map(p => p.lowest_price));
+
+  wrap.innerHTML = brands.map(b => {
+    const items = filtered.filter(p => p.brand === b);
+    const prices = items.map(p => p.lowest_price);
+    const min = Math.min(...prices), max = Math.max(...prices);
+    const avg = prices.reduce((s, v) => s + v, 0) / prices.length;
+    const leftPct = (min / globalMax) * 100;
+    const widthPct = Math.max(1.5, ((max - min) / globalMax) * 100);
+    const avgLeftPct = (avg / globalMax) * 100;
+    const [c1, c2] = BRAND_COLORS[b] || ['var(--accent-1)', 'var(--accent-2)'];
+    return `
+      <div class="pos-row">
+        <div class="pos-label">
+          <span class="product-name">${b}</span>
+          <span style="color:var(--muted);">${items.length} models · avg ${avg.toFixed(0).toLocaleString('tr-TR')} TL</span>
+        </div>
+        <div class="pos-track">
+          <div class="pos-range" style="left:${leftPct.toFixed(2)}%; width:${widthPct.toFixed(2)}%; background: linear-gradient(90deg, ${c1}, ${c2});"></div>
+          <div class="pos-avg-dot" style="left:calc(${avgLeftPct.toFixed(2)}% - 2px);"></div>
+        </div>
+        <div class="pos-minmax">
+          <span>${min.toLocaleString('tr-TR')} TL</span>
+          <span>${max.toLocaleString('tr-TR')} TL</span>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// ---------- Best Value Leaderboard (lowest TL / GB of storage) ----------
+function renderLeaderboard() {
+  const wrap = document.getElementById('leaderboardWrap');
+  if (!wrap) return;
+
+  let pool = allProducts.filter(p => p.rom_gb && p.price_per_gb);
+  if (lbState.brand.length) pool = pool.filter(p => lbState.brand.includes(p.brand));
+
+  const rows = pool.slice().sort((a, b) => a.price_per_gb - b.price_per_gb).slice(0, 15);
+
+  if (!rows.length) {
+    wrap.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:180px;color:var(--muted);font-size:13px;">No products match the current filter</div>`;
+    return;
+  }
+
+  const maxPpgb = Math.max(...rows.map(r => r.price_per_gb));
+
+  wrap.innerHTML = rows.map((p, i) => {
+    const pct = Math.max(3, (p.price_per_gb / maxPpgb) * 100).toFixed(1);
+    const [c1, c2] = BRAND_COLORS[p.brand] || ['var(--accent-1)', 'var(--accent-2)'];
+    return `
+      <div class="lb-row">
+        <div class="lb-rank ${i < 3 ? 'top3' : ''}">#${i + 1}</div>
+        <div class="lb-info">
+          <span class="product-name">${p.model_name}</span>
+          <span class="config-line">${p.brand} · ${configLabel(p)}</span>
+        </div>
+        <div class="lb-track"><div class="lb-fill" style="width:${pct}%; background: linear-gradient(90deg, ${c1}, ${c2});"></div></div>
+        <div class="lb-value">${p.price_per_gb.toFixed(1)} TL/GB <span style="color:var(--muted);">· ${p.lowest_price.toLocaleString('tr-TR')} TL</span></div>
+      </div>
+    `;
+  }).join('');
+}
+
+function renderTable(filtered) {
+  let rows = filtered.slice().sort((a, b) => {
+    if (sortKey === 'brand_model') {
+      const dir = sortDir === 'asc' ? 1 : -1;
+      let c = BRAND_ORDER.indexOf(a.brand) - BRAND_ORDER.indexOf(b.brand); if (c) return c * dir;
+      c = a.model_name.localeCompare(b.model_name); if (c) return c * dir;
+      c = (a.rom_gb||0) - (b.rom_gb||0); if (c) return c * dir;
+      return 0;
+    }
+    let av, bv;
+    if (sortKey === 'config') { av = a.rom_gb || 0; bv = b.rom_gb || 0; }
+    else { av = a[sortKey]; bv = b[sortKey]; }
+    if (typeof av === 'string') { av = av.toLowerCase(); bv = bv.toLowerCase(); }
+    if (av === null || av === undefined) av = -Infinity;
+    if (bv === null || bv === undefined) bv = -Infinity;
+    if (av < bv) return sortDir === 'asc' ? -1 : 1;
+    if (av > bv) return sortDir === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  document.getElementById('result-count').textContent = `${rows.length} results`;
+
+  const tbody = document.getElementById('table-body');
+  if (!rows.length) {
+    tbody.innerHTML = `<tr class="empty-row"><td colspan="6">No products match the current filters</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = rows.map(p => `
+    <tr>
+      <td><span class="badge ${p.brand}">${p.brand}</span></td>
+      <td class="product-name">${p.model_name}</td>
+      <td><span class="config-pill">${configLabel(p)}</span></td>
+      <td><div class="price-main">${p.lowest_price.toLocaleString('tr-TR')} TL</div></td>
+      <td class="config-line">${p.price_per_gb ? p.price_per_gb.toFixed(1) + ' TL/GB' : '—'}</td>
+      <td><a class="link" href="${p.product_url}" target="_blank">Visit ↗</a></td>
+    </tr>
+  `).join('');
+}
+
+function wireFilterEvents() {
+  document.getElementById('reset-btn').addEventListener('click', () => {
+    state.brand = []; state.product = []; state.priceMin = null; state.priceMax = null;
+    document.getElementById('price-min').value = '';
+    document.getElementById('price-max').value = '';
+    render();
+  });
+  document.getElementById('price-min').addEventListener('input', (e) => {
+    state.priceMin = e.target.value === '' ? null : Number(e.target.value);
+    render();
+  });
+  document.getElementById('price-max').addEventListener('input', (e) => {
+    state.priceMax = e.target.value === '' ? null : Number(e.target.value);
+    render();
+  });
+  document.querySelectorAll('thead th[data-key]').forEach(th => {
+    th.addEventListener('click', () => {
+      const key = th.dataset.key === 'model_name' ? 'brand_model' : th.dataset.key;
+      if (sortKey === key) { sortDir = sortDir === 'asc' ? 'desc' : 'asc'; }
+      else { sortKey = key; sortDir = 'asc'; }
+      renderTable(applyFilters(allProducts));
+    });
+  });
+}
+
+boot();
+</script>
+
+</body>
+</html>
