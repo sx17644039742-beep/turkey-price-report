@@ -196,6 +196,13 @@
     font-weight: 600;
     box-shadow: 0 0 18px -4px rgba(124,58,237,0.7);
   }
+  .filter-bar .export-btn {
+    border: 1px solid var(--border);
+    background: rgba(255,255,255,0.04);
+    color: var(--text); padding: 10px 20px; border-radius: 10px; font-size: 13px; cursor: pointer; font-weight: 600;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .filter-bar .export-btn:hover { border-color: var(--accent-2); color: #fff; }
   .filter-bar .result-count { font-size: 12px; color: var(--muted); align-self: center; }
 
   .quick-filter-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 16px; }
@@ -356,6 +363,7 @@
       </div>
     </div>
     <button class="reset-btn" id="reset-btn">Reset Filters</button>
+    <button class="export-btn" id="export-btn" title="Export the currently filtered/sorted table below as a CSV file">⭳ Export CSV</button>
     <div class="spacer"></div>
     <span class="result-count" id="result-count"></span>
   </div>
@@ -389,6 +397,7 @@ let allProducts = [];
 let sortKey = 'brand_model';
 let sortDir = 'asc';
 const trendCache = {};
+let lastTableRows = []; // the exact filtered+sorted rows currently shown in the table below, kept in sync by renderTable() — CSV export reads from here so it always matches what's on screen
 
 // Empty array = "no filter applied". Non-empty array = only show items whose
 // value is included in it (multi-select). Drives KPIs, brand cards, table.
@@ -908,6 +917,7 @@ function renderTable(filtered) {
     return 0;
   });
 
+  lastTableRows = rows;
   document.getElementById('result-count').textContent = `${rows.length} results`;
 
   const tbody = document.getElementById('table-body');
@@ -928,6 +938,39 @@ function renderTable(filtered) {
   `).join('');
 }
 
+// ---------- CSV export (exports exactly what's currently shown in the
+// product table below — same filters, same sort, same rows) ----------
+function downloadCSV(filename, header, rows) {
+  const escape = (v) => {
+    const s = (v === null || v === undefined) ? '' : String(v);
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  };
+  const lines = [header, ...rows].map(r => r.map(escape).join(','));
+  const csv = '\uFEFF' + lines.join('\r\n'); // UTF-8 BOM so Excel opens non-ASCII text correctly
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function exportTableCSV() {
+  const header = ['Brand', 'Model', 'Config', 'Lowest Price (TL)', 'TL / GB', 'URL'];
+  const rows = lastTableRows.map(p => [
+    p.brand,
+    p.model_name,
+    configLabel(p),
+    (p.lowest_price !== null && p.lowest_price !== undefined) ? Number(p.lowest_price).toFixed(2) : '',
+    (p.price_per_gb !== null && p.price_per_gb !== undefined) ? Number(p.price_per_gb).toFixed(2) : '',
+    p.product_url,
+  ]);
+  const today = new Date().toISOString().slice(0, 10);
+  downloadCSV(`turkey_phone_prices_${today}.csv`, header, rows);
+}
+
 function wireFilterEvents() {
   document.getElementById('reset-btn').addEventListener('click', () => {
     state.brand = []; state.product = []; state.priceMin = null; state.priceMax = null;
@@ -935,6 +978,7 @@ function wireFilterEvents() {
     document.getElementById('price-max').value = '';
     render();
   });
+  document.getElementById('export-btn').addEventListener('click', exportTableCSV);
   document.getElementById('price-min').addEventListener('input', (e) => {
     state.priceMin = e.target.value === '' ? null : Number(e.target.value);
     render();
